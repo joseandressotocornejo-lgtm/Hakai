@@ -13,27 +13,26 @@
         * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#070012; overflow:hidden; }
         body::before { content:""; position:absolute; width:600px; height:600px; background: radial-gradient(circle, rgba(255,0,204,0.1), transparent 70%); filter: blur(120px); right:5%; top:15%; z-index: -1; }
-        .card { width:95%; max-width:550px; border-radius:40px; padding:30px; position:relative; background: rgba(255,255,255,0.02); backdrop-filter: blur(30px); border:1px solid rgba(255,0,200,0.2); box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+        .card { width:95%; max-width:550px; border-radius:40px; padding:25px; position:relative; background: rgba(255,255,255,0.02); backdrop-filter: blur(30px); border:1px solid rgba(255,0,200,0.2); box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
         .lightning { position:absolute; left:-35px; top:-25px; width:110px; z-index: 2; }
         .lightning path { stroke:#ff00cc; stroke-width:6; fill:none; filter: drop-shadow(0 0 12px #ff00cc); }
-        .title { font-size:32px; font-weight:300; color:white; letter-spacing: 6px; text-transform: uppercase; margin-left: 60px; margin-bottom: 10px; }
-        .divider { height:1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); margin:20px 0; }
+        .title { font-size:30px; font-weight:300; color:white; letter-spacing: 6px; text-transform: uppercase; margin-left: 55px; margin-bottom: 5px; }
+        .divider { height:1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); margin:15px 0; }
         .input-group { position: relative; display: flex; align-items: center; }
-        input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 18px 60px 18px 18px; border-radius: 18px; color: white; outline: none; transition: 0.4s; font-size: 14px; }
+        input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 16px 60px 16px 18px; border-radius: 18px; color: white; outline: none; font-size: 14px; }
         .mic-container { position: absolute; right: 18px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .mic-ring { width: 10px; height: 10px; border: 1.5px solid rgba(255,0,204,0.4); border-radius: 50%; transition: 0.3s; }
         .active .mic-ring { width: 16px; height: 16px; border-color: #ff00cc; box-shadow: 0 0 10px #ff00cc; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
-        #response { margin-top: 20px; font-size: 11px; color: rgba(255,255,255,0.8); line-height: 1.5; max-height: 380px; overflow-y: auto; padding-right: 5px; }
-        table { width: 100%; border-collapse: collapse; margin: 15px 0; background: rgba(0,0,0,0.2); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
-        th { background: rgba(255,0,204,0.15); color: #ff00cc; text-align: left; padding: 12px; font-weight: 600; text-transform: uppercase; font-size: 9px; }
-        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #eee; }
-        .neg { color: #ff4d4d !important; font-weight: 600; }
-        .pos { color: #00ff88 !important; font-weight: 600; }
-        #response::-webkit-scrollbar { width: 3px; }
-        #response::-webkit-scrollbar-thumb { background: rgba(255,0,204,0.2); }
-        .user-tag { position: absolute; top: 20px; right: 40px; font-size: 8px; color: #ff00cc; letter-spacing: 2px; opacity: 0.7; }
-        .btn-fast { display: inline-block; padding: 5px 10px; margin: 5px 5px 0 0; background: rgba(255,0,204,0.1); border: 1px solid rgba(255,0,204,0.3); border-radius: 8px; color: #ff00cc; cursor: pointer; font-size: 10px; }
+        
+        #response { margin-top: 15px; font-size: 11px; color: rgba(255,255,255,0.8); line-height: 1.4; max-height: 380px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; background: rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden; font-size: 10px; }
+        th { background: rgba(255,0,204,0.12); color: #ff00cc; text-align: left; padding: 8px; font-weight: 600; text-transform: uppercase; }
+        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #eee; }
+        .neg { color: #ff4d4d !important; }
+        .pos { color: #00ff88 !important; }
+        .btn-fast { display: inline-block; padding: 6px 12px; margin: 8px 5px 0 0; background: rgba(255,0,204,0.1); border: 1px solid rgba(255,0,204,0.3); border-radius: 8px; color: #ff00cc; cursor: pointer; font-size: 10px; }
+        .user-tag { position: absolute; top: 15px; right: 35px; font-size: 8px; color: #ff00cc; letter-spacing: 2px; opacity: 0.6; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -44,10 +43,10 @@
     <div class="title">Hakai</div>
     <div class="divider"></div>
     <div class="input-group">
-        <input type="text" id="user-input" placeholder="Comando..." onkeypress="if(event.key==='Enter') processData()">
+        <input type="text" id="user-input" placeholder="¿Qué registramos?" onkeypress="if(event.key==='Enter') processData()">
         <div class="mic-container" id="mic-toggle" onclick="toggleMic()"><div class="mic-ring"></div></div>
     </div>
-    <div id="response">Sincronizando...</div>
+    <div id="response">Lista.</div>
 </div>
 
 <script>
@@ -55,31 +54,23 @@
     const GIST_ID = localStorage.getItem('h_gist_id');
     const GROQ_KEY = localStorage.getItem('h_groq');
     const USER_NAME = localStorage.getItem('h_user');
-    let state = { categorias: {}, presupuestos_base: {}, historial: [] };
+    let state = { categorias: {}, historial: [] };
 
     function applyColors() {
         document.querySelectorAll('td').forEach(cell => {
             const val = cell.innerText;
-            if (val.includes('-') || (val.startsWith('$') && val.includes('-'))) cell.classList.add('neg');
+            if (val.includes('-')) cell.classList.add('neg');
             if (val.includes('+')) cell.classList.add('pos');
         });
     }
 
     async function loadCloud() {
-        if (!GH_TOKEN || !GIST_ID || !GROQ_KEY || !USER_NAME) {
-            let n = prompt("Nombre:"); if(n) localStorage.setItem('h_user', n);
-            let t = prompt("Token:"); if(t) localStorage.setItem('h_gh_token', t);
-            let g = prompt("Gist ID:"); if(g) localStorage.setItem('h_gist_id', g);
-            let k = prompt("Groq Key:"); if(k) localStorage.setItem('h_groq', k);
-            location.reload(); return;
-        }
         try {
             const res = await fetch(`https://api.github.com/gists/${GIST_ID}?t=${Date.now()}`, { headers: { "Authorization": `token ${GH_TOKEN}` } });
             const data = await res.json();
             state = JSON.parse(data.files["hakai.json"].content);
             document.getElementById('user-display').innerText = USER_NAME;
-            document.getElementById('response').innerText = "Hakai Online.";
-        } catch (e) { document.getElementById('response').innerText = "Error de enlace."; }
+        } catch (e) { document.getElementById('response').innerText = "Reconecta."; }
     }
 
     async function processData(forcedInput = null) {
@@ -89,8 +80,7 @@
         if (!input) return;
 
         resDiv.innerHTML = "...";
-        await loadCloud(); 
-
+        await loadCloud();
         const fechaHoy = new Date().toLocaleDateString('es-CL');
 
         try {
@@ -100,12 +90,12 @@
                 body: JSON.stringify({ 
                     model: "llama-3.3-70b-versatile",
                     messages: [
-                        { role: "system", content: `IA de finanzas. HOY: ${fechaHoy}.
-                        REGLAS:
-                        1. "detalle completo": Si no dicen periodo, ofrece botones: <div class='btn-fast' onclick='processData(\"semanal\")'>Semanal</div> <div class='btn-fast' onclick='processData(\"mensual\")'>Mensual</div>.
-                        2. "semanal" o "mensual": Muestra Tabla Saldos y Tabla Historial filtrada.
-                        3. Gasto: '-', Aporte: '+'.
-                        4. JSON obligatorio tras ###. Cierra el JSON con } y nada más.` },
+                        { role: "system", content: `IA de finanzas. HOY: ${fechaHoy}. REGLAS:
+                        1. "detalle" (a secas) -> Muestra solo Tabla de Presupuestos (Categoría y Saldo). Resumen rápido.
+                        2. "detalle completo" -> Ofrece botones [Semanal] y [Mensual].
+                        3. "semanal"/"mensual" -> Muestra Tabla Saldos y Tabla Historial con: | Fecha | Valor | Nombre | Detalle |.
+                        4. NO inventes cuentas bancarias. Solo usa las categorías del estado.
+                        5. JSON tras ### obligatorio.` },
                         { role: "user", content: `Estado: ${JSON.stringify(state)}. Comando: ${input}` }
                     ],
                     temperature: 0
@@ -125,12 +115,11 @@
                     headers: { "Authorization": `token ${GH_TOKEN}` },
                     body: JSON.stringify({ files: { "hakai.json": { content: JSON.stringify(state) } } })
                 });
-                resDiv.innerHTML = marked.parse(parts[0].trim());
+                resDiv.innerHTML = marked.parse(parts[0].trim().replace("###", ""));
                 applyColors();
             } else { resDiv.innerHTML = marked.parse(rawText.trim()); }
             inputField.value = "";
-            resDiv.scrollTop = 0;
-        } catch (e) { resDiv.innerText = "Error en el flujo de datos."; console.error(e); }
+        } catch (e) { resDiv.innerText = "Error de red."; }
     }
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -142,7 +131,7 @@
         recognition.onend = () => document.getElementById('mic-toggle').classList.remove('active');
     }
     function toggleMic() { if(recognition){ document.getElementById('mic-toggle').classList.add('active'); recognition.start(); } }
-
+    
     loadCloud();
 </script>
 </body>
