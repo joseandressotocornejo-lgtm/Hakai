@@ -24,7 +24,6 @@
         .mic-ring { width: 10px; height: 10px; border: 1.5px solid rgba(255,0,204,0.4); border-radius: 50%; transition: 0.3s; }
         .active .mic-ring { width: 16px; height: 16px; border-color: #ff00cc; box-shadow: 0 0 10px #ff00cc; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
-        
         #response { margin-top: 15px; font-size: 11px; color: rgba(255,255,255,0.8); line-height: 1.4; max-height: 380px; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; margin: 10px 0; background: rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden; font-size: 10px; }
         th { background: rgba(255,0,204,0.12); color: #ff00cc; text-align: left; padding: 8px; font-weight: 600; text-transform: uppercase; }
@@ -43,7 +42,7 @@
     <div class="title">Hakai</div>
     <div class="divider"></div>
     <div class="input-group">
-        <input type="text" id="user-input" placeholder="¿Qué registramos?" onkeypress="if(event.key==='Enter') processData()">
+        <input type="text" id="user-input" placeholder="Comando..." onkeypress="if(event.key==='Enter') processData()">
         <div class="mic-container" id="mic-toggle" onclick="toggleMic()"><div class="mic-ring"></div></div>
     </div>
     <div id="response">Lista.</div>
@@ -70,7 +69,7 @@
             const data = await res.json();
             state = JSON.parse(data.files["hakai.json"].content);
             document.getElementById('user-display').innerText = USER_NAME;
-        } catch (e) { document.getElementById('response').innerText = "Reconecta."; }
+        } catch (e) { document.getElementById('response').innerText = "Error Cloud."; }
     }
 
     async function processData(forcedInput = null) {
@@ -90,12 +89,13 @@
                 body: JSON.stringify({ 
                     model: "llama-3.3-70b-versatile",
                     messages: [
-                        { role: "system", content: `IA de finanzas. HOY: ${fechaHoy}. REGLAS:
-                        1. "detalle" (a secas) -> Muestra solo Tabla de Presupuestos (Categoría y Saldo). Resumen rápido.
-                        2. "detalle completo" -> Ofrece botones [Semanal] y [Mensual].
-                        3. "semanal"/"mensual" -> Muestra Tabla Saldos y Tabla Historial con: | Fecha | Valor | Nombre | Detalle |.
-                        4. NO inventes cuentas bancarias. Solo usa las categorías del estado.
-                        5. JSON tras ### obligatorio.` },
+                        { role: "system", content: `IA Hakai. Usuario: ${USER_NAME}. HOY: ${fechaHoy}.
+                        REGLAS ESTRICTAS:
+                        1. PROHIBIDO mostrar tablas de "Cuenta Corriente", "Cuenta Ahorro" o "Totales". 
+                        2. "detalle" -> Solo tabla de saldos por categoría.
+                        3. "semanal/mensual" -> Tabla de Saldos Y Tabla Historial: | Fecha | Valor | Nombre | Detalle |.
+                        4. En 'Nombre', escribe siempre '${USER_NAME}' para nuevos gastos.
+                        5. Gasto: '-', Aporte: '+'. JSON tras ###.` },
                         { role: "user", content: `Estado: ${JSON.stringify(state)}. Comando: ${input}` }
                     ],
                     temperature: 0
@@ -115,11 +115,11 @@
                     headers: { "Authorization": `token ${GH_TOKEN}` },
                     body: JSON.stringify({ files: { "hakai.json": { content: JSON.stringify(state) } } })
                 });
-                resDiv.innerHTML = marked.parse(parts[0].trim().replace("###", ""));
+                resDiv.innerHTML = marked.parse(parts[0].trim());
                 applyColors();
             } else { resDiv.innerHTML = marked.parse(rawText.trim()); }
             inputField.value = "";
-        } catch (e) { resDiv.innerText = "Error de red."; }
+        } catch (e) { resDiv.innerText = "Error."; }
     }
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -131,7 +131,6 @@
         recognition.onend = () => document.getElementById('mic-toggle').classList.remove('active');
     }
     function toggleMic() { if(recognition){ document.getElementById('mic-toggle').classList.add('active'); recognition.start(); } }
-    
     loadCloud();
 </script>
 </body>
