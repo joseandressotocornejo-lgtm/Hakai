@@ -7,28 +7,44 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/ios-filled/512/ff00cc/flash-on.png">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/ios-filled/512/ff00cc/flash-on.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#070012; overflow:hidden; }
-        .card { width:95%; max-width:550px; border-radius:40px; padding:25px; position:relative; background: rgba(255,255,255,0.02); backdrop-filter: blur(30px); border:1px solid rgba(255,0,200,0.2); }
-        .title { font-size:28px; font-weight:300; color:white; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 15px; text-align:center; }
-        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 18px; color: white; outline: none; font-size: 14px; }
-        #response { margin-top: 20px; font-size: 12px; color: #eee; max-height: 350px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; margin: 10px 0; background: rgba(0,0,0,0.3); border-radius: 10px; overflow: hidden; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        th { color: #ff00cc; font-size: 10px; text-transform: uppercase; }
-        .neg { color: #ff4d4d; }
-        .pos { color: #00ff88; }
-        .user-tag { position: absolute; top: 15px; right: 25px; font-size: 9px; color: #ff00cc; }
+        body::before { content:""; position:absolute; width:600px; height:600px; background: radial-gradient(circle, rgba(255,0,204,0.1), transparent 70%); filter: blur(120px); right:5%; top:15%; z-index: -1; }
+        .card { width:95%; max-width:550px; border-radius:40px; padding:25px; position:relative; background: rgba(255,255,255,0.02); backdrop-filter: blur(30px); border:1px solid rgba(255,0,200,0.2); box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+        .lightning { position:absolute; left:-35px; top:-25px; width:110px; z-index: 2; }
+        .lightning path { stroke:#ff00cc; stroke-width:6; fill:none; filter: drop-shadow(0 0 12px #ff00cc); }
+        .title { font-size:30px; font-weight:300; color:white; letter-spacing: 6px; text-transform: uppercase; margin-left: 55px; margin-bottom: 5px; }
+        .divider { height:1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); margin:15px 0; }
+        .input-group { position: relative; display: flex; align-items: center; }
+        input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 16px 60px 16px 18px; border-radius: 18px; color: white; outline: none; font-size: 14px; }
+        .mic-container { position: absolute; right: 18px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .mic-ring { width: 10px; height: 10px; border: 1.5px solid rgba(255,0,204,0.4); border-radius: 50%; transition: 0.3s; }
+        .active .mic-ring { width: 16px; height: 16px; border-color: #ff00cc; box-shadow: 0 0 10px #ff00cc; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+        #response { margin-top: 15px; font-size: 11px; color: rgba(255,255,255,0.8); line-height: 1.4; max-height: 380px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; background: rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden; font-size: 10px; }
+        th { background: rgba(255,0,204,0.12); color: #ff00cc; text-align: left; padding: 8px; font-weight: 600; text-transform: uppercase; }
+        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #eee; }
+        .neg { color: #ff4d4d !important; }
+        .pos { color: #00ff88 !important; }
+        .btn-fast { display: inline-block; padding: 6px 12px; margin: 8px 5px 0 0; background: rgba(255,0,204,0.1); border: 1px solid rgba(255,0,204,0.3); border-radius: 8px; color: #ff00cc; cursor: pointer; font-size: 10px; }
+        .user-tag { position: absolute; top: 15px; right: 35px; font-size: 8px; color: #ff00cc; letter-spacing: 2px; opacity: 0.6; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
 <div class="card">
     <div id="user-display" class="user-tag"></div>
+    <svg class="lightning" viewBox="0 0 100 150"><path d="M60 0 L20 80 L55 80 L35 150 L85 60 L50 60 Z"/></svg>
     <div class="title">Hakai</div>
-    <input type="text" id="user-input" placeholder="Comando..." onkeypress="if(event.key==='Enter') processData()">
+    <div class="divider"></div>
+    <div class="input-group">
+        <input type="text" id="user-input" placeholder="Comando..." onkeypress="if(event.key==='Enter') processData()">
+        <div class="mic-container" id="mic-toggle" onclick="toggleMic()"><div class="mic-ring"></div></div>
+    </div>
     <div id="response">Lista.</div>
 </div>
 
@@ -39,19 +55,32 @@
     const USER_NAME = localStorage.getItem('h_user');
     let state = { categorias: {}, historial: [] };
 
-    async function processData() {
+    function applyColors() {
+        document.querySelectorAll('td').forEach(cell => {
+            const val = cell.innerText;
+            if (val.includes('-')) cell.classList.add('neg');
+            if (val.includes('+')) cell.classList.add('pos');
+        });
+    }
+
+    async function loadCloud() {
+        try {
+            const res = await fetch(`https://api.github.com/gists/${GIST_ID}?t=${Date.now()}`, { headers: { "Authorization": `token ${GH_TOKEN}` } });
+            const data = await res.json();
+            state = JSON.parse(data.files["hakai.json"].content);
+            document.getElementById('user-display').innerText = USER_NAME;
+        } catch (e) { document.getElementById('response').innerText = "Error Cloud."; }
+    }
+
+    async function processData(forcedInput = null) {
         const inputField = document.getElementById('user-input');
-        const input = inputField.value;
+        const input = forcedInput || inputField.value;
         const resDiv = document.getElementById('response');
         if (!input) return;
 
         resDiv.innerHTML = "...";
-        
-        // 1. Cargar datos frescos para evitar duplicados por lag
-        const res = await fetch(`https://api.github.com/gists/${GIST_ID}?t=${Date.now()}`, { headers: { "Authorization": `token ${GH_TOKEN}` } });
-        const data = await res.json();
-        state = JSON.parse(data.files["hakai.json"].content);
-        document.getElementById('user-display').innerText = USER_NAME;
+        await loadCloud();
+        const fechaHoy = new Date().toLocaleDateString('es-CL');
 
         try {
             const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -60,41 +89,49 @@
                 body: JSON.stringify({ 
                     model: "llama-3.3-70b-versatile",
                     messages: [
-                        { role: "system", content: `IA FINANZAS. Usuario: ${USER_NAME}.
-                        REGLAS DE ORO:
-                        1. SI ES PREGUNTA (ej: "¿cuánto queda?"): Solo responde el monto. PROHIBIDO crear registros en el historial o modificar saldos.
-                        2. SI ES GASTO/APORTE: Registra UNA VEZ, resta/suma y confirma con < 5 palabras.
-                        3. FORMATO TABLA: Solo para comandos "detalle", "semanal" o "mensual".
-                        4. HISTORIAL: | Fecha | Valor | Nombre | Detalle |.
-                        5. RESPUESTA SUCCINTA: Sin explicaciones matemáticas, solo el resultado final.
-                        6. JSON obligatorio tras ###.` },
-                        { role: "user", content: `Estado Actual: ${JSON.stringify(state)}. Comando: ${input}` }
+                        { role: "system", content: `IA Hakai. Usuario: ${USER_NAME}. HOY: ${fechaHoy}.
+                        REGLAS ESTRICTAS:
+                        1. PROHIBIDO mostrar tablas de "Cuenta Corriente", "Cuenta Ahorro" o "Totales". 
+                        2. "detalle" -> Solo tabla de saldos por categoría.
+                        3. "semanal/mensual" -> Tabla de Saldos Y Tabla Historial: | Fecha | Valor | Nombre | Detalle |.
+                        4. En 'Nombre', escribe siempre '${USER_NAME}' para nuevos gastos.
+                        5. Gasto: '-', Aporte: '+'. JSON tras ###.` },
+                        { role: "user", content: `Estado: ${JSON.stringify(state)}. Comando: ${input}` }
                     ],
                     temperature: 0
                 }),
             });
-            const result = await response.json();
-            const rawText = result.choices[0].message.content;
+            const data = await response.json();
+            const rawText = data.choices[0].message.content;
             
             if (rawText.includes('###')) {
                 const parts = rawText.split('###');
-                const cleanJson = parts[parts.length - 1].trim().substring(parts[parts.length - 1].trim().indexOf('{'), parts[parts.length - 1].trim().lastIndexOf('}') + 1);
-                const newState = JSON.parse(cleanJson);
+                const jsonStr = parts[parts.length - 1].trim();
+                const cleanJson = jsonStr.substring(jsonStr.indexOf('{'), jsonStr.lastIndexOf('}') + 1);
+                state = JSON.parse(cleanJson);
 
-                // Solo guardar en GitHub si hubo un cambio real en el historial o saldos
-                if (JSON.stringify(state) !== JSON.stringify(newState)) {
-                    await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-                        method: 'PATCH',
-                        headers: { "Authorization": `token ${GH_TOKEN}` },
-                        body: JSON.stringify({ files: { "hakai.json": { content: JSON.stringify(newState) } } })
-                    });
-                    state = newState;
-                }
+                await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                    method: 'PATCH',
+                    headers: { "Authorization": `token ${GH_TOKEN}` },
+                    body: JSON.stringify({ files: { "hakai.json": { content: JSON.stringify(state) } } })
+                });
                 resDiv.innerHTML = marked.parse(parts[0].trim());
-            } else { resDiv.innerText = rawText.trim(); }
+                applyColors();
+            } else { resDiv.innerHTML = marked.parse(rawText.trim()); }
             inputField.value = "";
         } catch (e) { resDiv.innerText = "Error."; }
     }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'es-CL';
+        recognition.onresult = (e) => { document.getElementById('user-input').value = e.results[0][0].transcript; processData(); };
+        recognition.onend = () => document.getElementById('mic-toggle').classList.remove('active');
+    }
+    function toggleMic() { if(recognition){ document.getElementById('mic-toggle').classList.add('active'); recognition.start(); } }
+    loadCloud();
 </script>
 </body>
 </html>
