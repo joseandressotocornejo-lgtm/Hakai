@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>HAKAI</title>
+    <title>HAKAI ELITE</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    
     <link rel="apple-touch-icon" href="https://img.icons8.com/ios-filled/512/ff00cc/flash-on.png">
-    <link rel="icon" type="image/png" href="https://img.icons8.com/ios-filled/512/ff00cc/flash-on.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -20,19 +17,25 @@
         .lightning path { stroke:#ff00cc; stroke-width:6; fill:none; filter: drop-shadow(0 0 12px #ff00cc); }
         .title { font-size:30px; font-weight:300; color:white; letter-spacing: 6px; text-transform: uppercase; margin-left: 55px; margin-bottom: 5px; }
         .divider { height:1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); margin:15px 0; }
-        .input-group { position: relative; display: flex; align-items: center; }
-        input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 16px 60px 16px 18px; border-radius: 18px; color: white; outline: none; font-size: 14px; }
-        .mic-container { position: absolute; right: 18px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .mic-ring { width: 10px; height: 10px; border: 1.5px solid rgba(255,0,204,0.4); border-radius: 50%; transition: 0.3s; }
-        .active .mic-ring { width: 16px; height: 16px; border-color: #ff00cc; box-shadow: 0 0 10px #ff00cc; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 18px; border-radius: 20px; color: white; outline: none; font-size: 15px; transition: 0.3s; }
+        input:focus { border-color: #ff00cc; box-shadow: 0 0 15px rgba(255,0,204,0.2); }
         #response { margin-top: 15px; font-size: 11px; color: rgba(255,255,255,0.8); line-height: 1.4; max-height: 380px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; margin: 10px 0; background: rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden; font-size: 10px; }
-        th { background: rgba(255,0,204,0.12); color: #ff00cc; text-align: left; padding: 8px; font-weight: 600; text-transform: uppercase; }
-        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #eee; }
-        .neg { color: #ff4d4d !important; }
-        .pos { color: #00ff88 !important; }
+        
+        /* Estilos de Tabla y Barras */
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; background: rgba(0,0,0,0.3); border-radius: 15px; overflow: hidden; }
+        th { background: rgba(255,0,204,0.15); color: #ff00cc; text-align: left; padding: 10px; font-size: 10px; text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #eee; position: relative; }
+        
+        .progress-container { width: 100%; height: 3px; background: rgba(255,255,255,0.05); margin-top: 4px; border-radius: 2px; overflow: hidden; }
+        .progress-bar { height: 100%; transition: width 0.5s ease; }
+        .p-high { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
+        .p-mid { background: #ffcc00; box-shadow: 0 0 8px #ffcc00; }
+        .p-low { background: #ff00cc; box-shadow: 0 0 8px #ff00cc; }
+        
+        .neg { color: #ff4d4d !important; font-weight: bold; }
+        .pos { color: #00ff88 !important; font-weight: bold; }
         .user-tag { position: absolute; top: 15px; right: 35px; font-size: 8px; color: #ff00cc; letter-spacing: 2px; opacity: 0.6; }
+        .alert-box { background: rgba(255,0,77,0.1); border: 1px solid #ff004d; color: #ff4d4d; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 10px; text-align: center; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -42,11 +45,8 @@
     <svg class="lightning" viewBox="0 0 100 150"><path d="M60 0 L20 80 L55 80 L35 150 L85 60 L50 60 Z"/></svg>
     <div class="title">Hakai</div>
     <div class="divider"></div>
-    <div class="input-group">
-        <input type="text" id="user-input" placeholder="Comando..." onkeypress="if(event.key==='Enter') processData()">
-        <div class="mic-container" id="mic-toggle" onclick="toggleMic()"><div class="mic-ring"></div></div>
-    </div>
-    <div id="response">Lista.</div>
+    <input type="text" id="user-input" placeholder="¿Qué registramos hoy?" onkeypress="if(event.key==='Enter') processData()">
+    <div id="response">Sistema listo para reporte.</div>
 </div>
 
 <script>
@@ -56,11 +56,40 @@
     const USER_NAME = localStorage.getItem('h_user');
     let state = { categorias: {}, historial: [] };
 
-    function applyColors() {
+    // Presupuestos para las barras de progreso
+    const BUDGETS = {
+        "Mercaderia": 150000,
+        "Gastos Fijos": 673700, // Suma de todos tus fijos (Arriendo, Luz, Gym, etc)
+        "Ocio": 100000, // Ajustable
+        "Ahorro": 280000
+    };
+
+    function applyEnhancements() {
         document.querySelectorAll('td').forEach(cell => {
-            const val = cell.innerText;
-            if (val.includes('-')) cell.classList.add('neg');
-            if (val.includes('+')) cell.classList.add('pos');
+            const text = cell.innerText;
+            if (text.includes('-')) cell.classList.add('neg');
+            if (text.includes('+')) cell.classList.add('pos');
+        });
+
+        // Lógica de Barras de Progreso (Simulación visual en la tabla)
+        const rows = document.querySelectorAll('tr');
+        rows.forEach(row => {
+            const catCell = row.cells[0];
+            const valCell = row.cells[1];
+            if (catCell && valCell && BUDGETS[catCell.innerText]) {
+                const current = parseInt(valCell.innerText.replace(/[^0-9-]/g, ''));
+                const total = BUDGETS[catCell.innerText];
+                const pct = Math.max(0, Math.min(100, (current / total) * 100));
+                
+                let colorClass = 'p-high';
+                if (pct < 50) colorClass = 'p-mid';
+                if (pct < 20) colorClass = 'p-low';
+
+                valCell.innerHTML += `
+                    <div class="progress-container">
+                        <div class="progress-bar ${colorClass}" style="width: ${pct}%"></div>
+                    </div>`;
+            }
         });
     }
 
@@ -70,7 +99,7 @@
             const data = await res.json();
             state = JSON.parse(data.files["hakai.json"].content);
             document.getElementById('user-display').innerText = USER_NAME;
-        } catch (e) { document.getElementById('response').innerText = "Reconecta."; }
+        } catch (e) { document.getElementById('response').innerText = "Error Cloud."; }
     }
 
     async function processData() {
@@ -92,16 +121,16 @@
                     messages: [
                         { role: "system", content: `IA HAKAI. Usuario: ${USER_NAME}. HOY: ${fechaHoy}.
                         CLASIFICACIÓN:
-                        - Mercaderia: Comida casa, aseo, despensa.
-                        - Gastos Fijos: Internet, luz, agua, gas, arriendo, gastos comunes, autopista, gym, celulares.
-                        - Ocio: Individual, comer en la calle, gustos personales.
-                        - Ahorro: Meta min 60.000.
+                        - Mercaderia: Comida, aseo, despensa. (Presupuesto: 150k)
+                        - Gastos Fijos: Luz, agua, gas, arriendo, gastos comunes, autopista, gym, celulares. (Presupuesto: 673.7k)
+                        - Ocio: Comida calle, individual, gustos. (Presupuesto: 100k)
+                        - Ahorro: Meta MIN 60.000. (Presupuesto: 280k inicial)
                         
                         REGLAS:
-                        1. SI ES PREGUNTA: Solo monto. NO guardes.
-                        2. SI ES GASTO: Clasifica en el grupo general, pero en la columna 'Detalle' del historial escribe el detalle específico (ej: "Completo", "Luz").
-                        3. "detalle" -> Solo tabla de saldos por grupos.
-                        4. "semanal/mensual" -> Tabla saldos + Historial completo: | Fecha | Valor | Nombre | Detalle Especifico |.
+                        1. SI GASTA: Clasifica en grupo general y pon el detalle real en la columna 'Detalle' (ej: "Luz").
+                        2. SI EL AHORRO BAJA DE 60k: Incluye una frase de advertencia al inicio: "⚠️ ALERTA: Ahorro bajo el mínimo".
+                        3. TABLAS: "detalle" -> Tabla de Saldos con columnas | Categoría | Saldo |.
+                        4. "semanal" -> Tabla Saldos + Tabla Historial Completo.
                         5. JSON tras ###.` },
                         { role: "user", content: `Estado: ${JSON.stringify(state)}. Comando: ${input}` }
                     ],
@@ -125,21 +154,11 @@
                     });
                 }
                 resDiv.innerHTML = marked.parse(parts[0].trim());
-                applyColors();
+                applyEnhancements();
             } else { resDiv.innerHTML = marked.parse(rawText.trim()); }
             inputField.value = "";
         } catch (e) { resDiv.innerText = "Error."; }
     }
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognition;
-    if (SpeechRecognition) {
-        recognition = new SpeechRecognition();
-        recognition.lang = 'es-CL';
-        recognition.onresult = (e) => { document.getElementById('user-input').value = e.results[0][0].transcript; processData(); };
-        recognition.onend = () => document.getElementById('mic-toggle').classList.remove('active');
-    }
-    function toggleMic() { if(recognition){ document.getElementById('mic-toggle').classList.add('active'); recognition.start(); } }
     loadCloud();
 </script>
 </body>
