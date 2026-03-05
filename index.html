@@ -26,9 +26,9 @@
         #response { margin-top: 15px; font-size: 11px; color: rgba(255,255,255,0.8); line-height: 1.4; max-height: 380px; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; margin: 10px 0; background: rgba(0,0,0,0.3); border-radius: 15px; overflow: hidden; }
         th { background: rgba(255,0,204,0.15); color: #ff00cc; text-align: left; padding: 10px; font-size: 10px; text-transform: uppercase; }
-        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #eee; position: relative; }
+        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #eee; }
         .progress-container { width: 100%; height: 4px; background: rgba(255,255,255,0.05); margin-top: 6px; border-radius: 10px; }
-        .progress-bar { height: 100%; transition: width 0.5s ease; border-radius: 10px; }
+        .progress-bar { height: 100%; transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 10px; }
         .p-high { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
         .p-mid { background: #ffcc00; box-shadow: 0 0 8px #ffcc00; }
         .p-low { background: #ff00cc; box-shadow: 0 0 8px #ff00cc; }
@@ -48,7 +48,7 @@
         <input type="text" id="user-input" placeholder="Comando..." onkeypress="if(event.key==='Enter') { this.blur(); processData(); }">
         <div class="mic-container" id="mic-toggle" onclick="toggleMic()"><div class="mic-ring"></div></div>
     </div>
-    <div id="response">Esperando reinicio...</div>
+    <div id="response">Listo.</div>
 </div>
 
 <script>
@@ -58,6 +58,7 @@
     const USER_NAME = localStorage.getItem('h_user');
     let state = { categorias: {}, historial: [] };
 
+    // PRESUPUESTOS BASE EXACTOS
     const BUDGETS = {
         "Mercaderia": 150000,
         "Gastos Fijos": 673700,
@@ -72,13 +73,13 @@
         });
 
         document.querySelectorAll('tr').forEach(row => {
-            const catCell = row.cells[0];
+            const catName = row.cells[0]?.innerText.trim();
             const valCell = row.cells[1];
-            if (catCell && valCell && BUDGETS[catCell.innerText.trim()]) {
+            if (catName && BUDGETS[catName]) {
                 const current = parseInt(valCell.innerText.replace(/[^0-9-]/g, '')) || 0;
-                const total = BUDGETS[catCell.innerText.trim()];
+                const total = BUDGETS[catName];
                 const pct = Math.max(0, Math.min(100, (current / total) * 100));
-                let colorClass = pct < 20 ? 'p-low' : (pct < 50 ? 'p-mid' : 'p-high');
+                let colorClass = pct < 25 ? 'p-low' : (pct < 60 ? 'p-mid' : 'p-high');
                 valCell.innerHTML += `<div class="progress-container"><div class="progress-bar ${colorClass}" style="width: ${pct}%"></div></div>`;
             }
         });
@@ -91,7 +92,7 @@
             state = JSON.parse(data.files["hakai.json"].content);
             document.getElementById('user-display').innerText = USER_NAME;
             applyEnhancements();
-        } catch (e) { document.getElementById('response').innerText = "Error."; }
+        } catch (e) { document.getElementById('response').innerText = "Error Cloud."; }
     }
 
     async function processData() {
@@ -109,18 +110,20 @@
                 body: JSON.stringify({ 
                     model: "llama-3.3-70b-versatile",
                     messages: [
-                        { role: "system", content: `IA HAKAI. Usuario: ${USER_NAME}.
-                        CLASIFICACIÓN OBLIGATORIA:
-                        1. Mercaderia (150.000): Comida, aseo, despensa.
-                        2. Gastos Fijos (673.700): Luz, agua, gas, arriendo, gastos comunes, autopista, gym, celulares.
-                        3. Ocio (100.000): Comida calle, individual, completos.
-                        4. Ahorro (280.000): Meta min 60k.
+                        { role: "system", content: `IA HAKAI. NO INVENTES DATOS.
+                        CATEGORÍAS Y PRESUPUESTOS (ESTRICTO):
+                        - Mercaderia: 150.000
+                        - Gastos Fijos: 673.700
+                        - Ocio: 100.000
+                        - Ahorro: 280.000 (Meta > 60k)
                         
                         REGLAS:
-                        - Si el usuario dice "Reinicia todo", crea las 4 categorías con sus presupuestos base y limpia historial.
-                        - El historial debe mostrar detalle real (ej: "Luz") pero descontar de la categoría general.
-                        - JSON tras ###.` },
-                        { role: "user", content: `Estado: ${JSON.stringify(state)}. Comando: ${input}` }
+                        1. Solo registra si el usuario da un monto.
+                        2. Si el comando es "detalle", muestra solo la tabla de saldos.
+                        3. Los nombres de categorías deben ser EXACTOS para que las barras funcionen.
+                        4. Si el ahorro baja de 60k, advierte.
+                        5. JSON tras ###.` },
+                        { role: "user", content: `Estado actual: ${JSON.stringify(state)}. Comando: ${input}` }
                     ],
                     temperature: 0
                 }),
@@ -136,7 +139,7 @@
                     body: JSON.stringify({ files: { "hakai.json": { content: JSON.stringify(state) } } })
                 });
                 resDiv.innerHTML = marked.parse(parts[0].trim());
-                setTimeout(applyEnhancements, 100);
+                setTimeout(applyEnhancements, 50);
             } else { resDiv.innerHTML = marked.parse(rawText.trim()); }
             inputField.value = "";
         } catch (e) { resDiv.innerText = "Error."; }
