@@ -17,17 +17,23 @@
         .lightning path { stroke:#ff00cc; stroke-width:6; fill:none; filter: drop-shadow(0 0 12px #ff00cc); }
         .title { font-size:30px; font-weight:300; color:white; letter-spacing: 6px; text-transform: uppercase; margin-left: 55px; margin-bottom: 5px; }
         .divider { height:1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); margin:15px 0; }
-        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 18px; border-radius: 20px; color: white; outline: none; font-size: 15px; transition: 0.3s; }
-        input:focus { border-color: #ff00cc; box-shadow: 0 0 15px rgba(255,0,204,0.2); }
+        
+        .input-group { position: relative; display: flex; align-items: center; }
+        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 16px 60px 16px 18px; border-radius: 20px; color: white; outline: none; font-size: 15px; }
+        
+        .mic-container { position: absolute; right: 18px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .mic-ring { width: 10px; height: 10px; border: 1.5px solid rgba(255,0,204,0.4); border-radius: 50%; }
+        .active .mic-ring { width: 16px; height: 16px; border-color: #ff00cc; box-shadow: 0 0 10px #ff00cc; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+
         #response { margin-top: 15px; font-size: 11px; color: rgba(255,255,255,0.8); line-height: 1.4; max-height: 380px; overflow-y: auto; }
         
-        /* Estilos de Tabla y Barras */
         table { width: 100%; border-collapse: collapse; margin: 10px 0; background: rgba(0,0,0,0.3); border-radius: 15px; overflow: hidden; }
         th { background: rgba(255,0,204,0.15); color: #ff00cc; text-align: left; padding: 10px; font-size: 10px; text-transform: uppercase; }
-        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #eee; position: relative; }
+        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #eee; }
         
-        .progress-container { width: 100%; height: 3px; background: rgba(255,255,255,0.05); margin-top: 4px; border-radius: 2px; overflow: hidden; }
-        .progress-bar { height: 100%; transition: width 0.5s ease; }
+        .progress-container { width: 100%; height: 3px; background: rgba(255,255,255,0.05); margin-top: 4px; border-radius: 2px; }
+        .progress-bar { height: 100%; transition: width 0.5s ease; border-radius: 2px; }
         .p-high { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
         .p-mid { background: #ffcc00; box-shadow: 0 0 8px #ffcc00; }
         .p-low { background: #ff00cc; box-shadow: 0 0 8px #ff00cc; }
@@ -35,7 +41,6 @@
         .neg { color: #ff4d4d !important; font-weight: bold; }
         .pos { color: #00ff88 !important; font-weight: bold; }
         .user-tag { position: absolute; top: 15px; right: 35px; font-size: 8px; color: #ff00cc; letter-spacing: 2px; opacity: 0.6; }
-        .alert-box { background: rgba(255,0,77,0.1); border: 1px solid #ff004d; color: #ff4d4d; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 10px; text-align: center; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -45,8 +50,11 @@
     <svg class="lightning" viewBox="0 0 100 150"><path d="M60 0 L20 80 L55 80 L35 150 L85 60 L50 60 Z"/></svg>
     <div class="title">Hakai</div>
     <div class="divider"></div>
-    <input type="text" id="user-input" placeholder="¿Qué registramos hoy?" onkeypress="if(event.key==='Enter') processData()">
-    <div id="response">Sistema listo para reporte.</div>
+    <div class="input-group">
+        <input type="text" id="user-input" placeholder="Comando..." onkeypress="if(event.key==='Enter') { this.blur(); processData(); }">
+        <div class="mic-container" id="mic-toggle" onclick="toggleMic()"><div class="mic-ring"></div></div>
+    </div>
+    <div id="response">Listo.</div>
 </div>
 
 <script>
@@ -56,11 +64,10 @@
     const USER_NAME = localStorage.getItem('h_user');
     let state = { categorias: {}, historial: [] };
 
-    // Presupuestos para las barras de progreso
     const BUDGETS = {
         "Mercaderia": 150000,
-        "Gastos Fijos": 673700, // Suma de todos tus fijos (Arriendo, Luz, Gym, etc)
-        "Ocio": 100000, // Ajustable
+        "Gastos Fijos": 673700,
+        "Ocio": 100000,
         "Ahorro": 280000
     };
 
@@ -71,7 +78,6 @@
             if (text.includes('+')) cell.classList.add('pos');
         });
 
-        // Lógica de Barras de Progreso (Simulación visual en la tabla)
         const rows = document.querySelectorAll('tr');
         rows.forEach(row => {
             const catCell = row.cells[0];
@@ -80,15 +86,8 @@
                 const current = parseInt(valCell.innerText.replace(/[^0-9-]/g, ''));
                 const total = BUDGETS[catCell.innerText];
                 const pct = Math.max(0, Math.min(100, (current / total) * 100));
-                
-                let colorClass = 'p-high';
-                if (pct < 50) colorClass = 'p-mid';
-                if (pct < 20) colorClass = 'p-low';
-
-                valCell.innerHTML += `
-                    <div class="progress-container">
-                        <div class="progress-bar ${colorClass}" style="width: ${pct}%"></div>
-                    </div>`;
+                let colorClass = pct < 20 ? 'p-low' : (pct < 50 ? 'p-mid' : 'p-high');
+                valCell.innerHTML += `<div class="progress-container"><div class="progress-bar ${colorClass}" style="width: ${pct}%"></div></div>`;
             }
         });
     }
@@ -99,7 +98,7 @@
             const data = await res.json();
             state = JSON.parse(data.files["hakai.json"].content);
             document.getElementById('user-display').innerText = USER_NAME;
-        } catch (e) { document.getElementById('response').innerText = "Error Cloud."; }
+        } catch (e) { document.getElementById('response').innerText = "Error."; }
     }
 
     async function processData() {
@@ -120,18 +119,12 @@
                     model: "llama-3.3-70b-versatile",
                     messages: [
                         { role: "system", content: `IA HAKAI. Usuario: ${USER_NAME}. HOY: ${fechaHoy}.
-                        CLASIFICACIÓN:
-                        - Mercaderia: Comida, aseo, despensa. (Presupuesto: 150k)
-                        - Gastos Fijos: Luz, agua, gas, arriendo, gastos comunes, autopista, gym, celulares. (Presupuesto: 673.7k)
-                        - Ocio: Comida calle, individual, gustos. (Presupuesto: 100k)
-                        - Ahorro: Meta MIN 60.000. (Presupuesto: 280k inicial)
-                        
+                        CLASIFICACIÓN: Mercaderia (150k), Gastos Fijos (673.7k), Ocio (100k), Ahorro (Meta 60k+).
                         REGLAS:
-                        1. SI GASTA: Clasifica en grupo general y pon el detalle real en la columna 'Detalle' (ej: "Luz").
-                        2. SI EL AHORRO BAJA DE 60k: Incluye una frase de advertencia al inicio: "⚠️ ALERTA: Ahorro bajo el mínimo".
-                        3. TABLAS: "detalle" -> Tabla de Saldos con columnas | Categoría | Saldo |.
-                        4. "semanal" -> Tabla Saldos + Tabla Historial Completo.
-                        5. JSON tras ###.` },
+                        1. SI GASTA: Clasifica en grupo general y pon detalle real en 'Detalle' (ej: "Luz").
+                        2. SI AHORRO < 60k: Advierte: "⚠️ ALERTA: Ahorro bajo el mínimo".
+                        3. TABLAS: "detalle" -> Saldos | "semanal" -> Saldos + Historial.
+                        4. JSON tras ###.` },
                         { role: "user", content: `Estado: ${JSON.stringify(state)}. Comando: ${input}` }
                     ],
                     temperature: 0
@@ -143,22 +136,32 @@
             if (rawText.includes('###')) {
                 const parts = rawText.split('###');
                 const cleanJson = parts[parts.length - 1].trim().substring(parts[parts.length - 1].trim().indexOf('{'), parts[parts.length - 1].trim().lastIndexOf('}') + 1);
-                const newState = JSON.parse(cleanJson);
-
-                if (JSON.stringify(state.historial) !== JSON.stringify(newState.historial)) {
-                    state = newState;
-                    await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-                        method: 'PATCH',
-                        headers: { "Authorization": `token ${GH_TOKEN}` },
-                        body: JSON.stringify({ files: { "hakai.json": { content: JSON.stringify(state) } } })
-                    });
-                }
+                state = JSON.parse(cleanJson);
+                await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                    method: 'PATCH',
+                    headers: { "Authorization": `token ${GH_TOKEN}` },
+                    body: JSON.stringify({ files: { "hakai.json": { content: JSON.stringify(state) } } })
+                });
                 resDiv.innerHTML = marked.parse(parts[0].trim());
                 applyEnhancements();
             } else { resDiv.innerHTML = marked.parse(rawText.trim()); }
             inputField.value = "";
         } catch (e) { resDiv.innerText = "Error."; }
     }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'es-CL';
+        recognition.onresult = (e) => { 
+            document.getElementById('user-input').value = e.results[0][0].transcript; 
+            document.getElementById('user-input').blur();
+            processData(); 
+        };
+        recognition.onend = () => document.getElementById('mic-toggle').classList.remove('active');
+    }
+    function toggleMic() { if(recognition){ document.getElementById('mic-toggle').classList.add('active'); recognition.start(); } }
     loadCloud();
 </script>
 </body>
