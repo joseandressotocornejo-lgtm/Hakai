@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>HAKAI ELITE V3</title>
+    <title>HAKAI ELITE V3.1</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/ios-filled/512/ff00cc/flash-on.png">
@@ -48,7 +48,7 @@
         <input type="text" id="user-input" placeholder="Comando..." onkeypress="if(event.key==='Enter') { this.blur(); processData(); }">
         <div class="mic-container" id="mic-toggle" onclick="toggleMic()"><div class="mic-ring"></div></div>
     </div>
-    <div id="response">Hakai Elite V3 cargada.</div>
+    <div id="response">Lógica Robusta Activada.</div>
 </div>
 
 <script>
@@ -69,7 +69,7 @@
         document.querySelectorAll('tr').forEach(row => {
             const catName = row.cells[0]?.innerText.trim();
             const valCell = row.cells[1];
-            if (catName && BUDGETS[catName] && row.cells.length < 4) {
+            if (catName && BUDGETS[catName] && row.cells.length === 2) {
                 const current = parseInt(valCell.innerText.replace(/[^0-9-]/g, '')) || 0;
                 const total = BUDGETS[catName];
                 const pct = Math.max(0, Math.min(100, (current / total) * 100));
@@ -105,17 +105,23 @@
                 body: JSON.stringify({ 
                     model: "llama-3.3-70b-versatile",
                     messages: [
-                        { role: "system", content: `IA HAKAI. HOY: ${hoy}.
-                        PRESUPUESTOS: Mercaderia(150k), Gastos Fijos(673.7k), Ocio(100k), Ahorro(280k).
+                        { role: "system", content: `ACTÚA COMO IA HAKAI. NO INVENTES. FECHA: ${hoy}.
                         
-                        REGLAS DE MOVIMIENTOS:
-                        1. TRANSFERENCIAS: Si el usuario pide pasar dinero de A a B, resta de A, suma a B y anota en historial como "Transferencia".
-                        2. REPORTES SEMANAL/MENSUAL: 
-                           - Tabla 1: Saldos actuales por categoría.
-                           - Tabla 2 (Desglose): | Fecha | Nombre | Monto | Categoría | Detalle (Para qué) |.
-                           - Filtra estrictamente por la fecha actual (semana o mes).
-                        3. GASTOS: Descuenta de categoría general pero guarda detalle específico.
-                        4. NO INVENTES: Si no hay datos, tabla vacía. JSON tras ###.` },
+                        ESTRUCTURA DE CATEGORÍAS (PROHIBIDO CREAR OTRAS):
+                        - Mercaderia (Presupuesto: 150000)
+                        - Gastos Fijos (Presupuesto: 673700)
+                        - Ocio (Presupuesto: 100000)
+                        - Ahorro (Presupuesto: 280000 | Alerta si < 60000)
+
+                        LÓGICA DE COMANDOS:
+                        1. "detalle": Responde SOLO con la tabla de saldos actuales.
+                        2. "detalle semanal" o "detalle mensual": Tabla de saldos + Tabla de desglose de movimientos del periodo.
+                        3. TRANSFERENCIAS: Si detectas "Pasa X de A a B", resta el monto de A y súmalo a B. Registra en historial como "Transferencia interna".
+                        4. GASTOS: Clasifica según el tipo (Comida=Mercaderia, Internet=Fijos, Salidas=Ocio). Extrae siempre el detalle específico para el historial.
+                        5. REGLA DE ORO: Si no hay monto numérico, no registres nada, solo responde.
+
+                        FORMATO DE SALIDA:
+                        Escribe tu respuesta y luego finaliza con el JSON actualizado tras ###.` },
                         { role: "user", content: `Estado: ${JSON.stringify(state)}. Comando: ${input}` }
                     ],
                     temperature: 0
@@ -143,7 +149,11 @@
     if (SpeechRecognition) {
         recognition = new SpeechRecognition();
         recognition.lang = 'es-CL';
-        recognition.onresult = (e) => { document.getElementById('user-input').value = e.results[0][0].transcript; document.getElementById('user-input').blur(); processData(); };
+        recognition.onresult = (e) => { 
+            document.getElementById('user-input').value = e.results[0][0].transcript; 
+            document.getElementById('user-input').blur(); 
+            processData(); 
+        };
         recognition.onend = () => document.getElementById('mic-toggle').classList.remove('active');
     }
     function toggleMic() { if(recognition){ document.getElementById('mic-toggle').classList.add('active'); recognition.start(); } }
